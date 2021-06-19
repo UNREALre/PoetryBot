@@ -58,6 +58,8 @@ class User(BaseModel):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    poem_sent = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
         return f'@{self.username}' if self.username is not None else f'{self.user_id}'
