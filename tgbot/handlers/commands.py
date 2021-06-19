@@ -9,8 +9,10 @@ from django.utils import timezone
 from tgbot.handlers import static_text
 from tgbot.models import User
 from tgbot.utils import extract_user_data_from_update
+from tgbot.handlers import static_text as st
 from tgbot.handlers.keyboard_utils import make_keyboard_for_start_command, keyboard_confirm_decline_broadcasting
 from tgbot.handlers.utils import handler_logging
+from tgbot.poetry import Poetry
 
 logger = logging.getLogger('default')
 logger.info("Command handlers check!")
@@ -21,10 +23,19 @@ def command_start(update, context):
     user, created = User.get_user_and_created(update, context)
 
     payload = context.args[0] if context.args else user.deep_link  # if empty payload, check what was stored in DB
-    text = 'Hello!'
+
+    poetry = Poetry(user)
+    poem, poem_id = poetry.load_poem()
+
+    text = f'{st.welcome}\n\n{poem}'
 
     user_id = extract_user_data_from_update(update)['user_id']
-    context.bot.send_message(chat_id=user_id, text=text, reply_markup=make_keyboard_for_start_command())
+    context.bot.send_message(
+        chat_id=user_id,
+        text=text,
+        reply_markup=make_keyboard_for_start_command(poem_id),
+        parse_mode=telegram.ParseMode.MARKDOWN
+    )
 
 
 def stats(update, context):

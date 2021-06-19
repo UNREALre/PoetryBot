@@ -11,7 +11,14 @@ from django.utils.translation import ugettext_lazy as _
 from tgbot import utils
 
 
-class Config(models.Model):
+class BaseModel(models.Model):
+    objects = models.Manager()
+
+    class Meta:
+        abstract = True
+
+
+class Config(BaseModel):
     """Модель настроек бота."""
 
     param_name = models.CharField(_('Наименование параметра'), max_length=255)
@@ -35,7 +42,7 @@ class Config(models.Model):
         return result
 
 
-class User(models.Model):
+class User(BaseModel):
     user_id = models.IntegerField(primary_key=True)
     username = models.CharField(max_length=32, null=True, blank=True)
     first_name = models.CharField(max_length=256)
@@ -91,7 +98,29 @@ class User(models.Model):
         verbose_name_plural = 'Пользователи'
 
 
-class Location(models.Model):
+class Poem(BaseModel):
+    author = models.CharField(_('Автор'), max_length=1000)
+    header = models.CharField(_('Наименование'), max_length=1000)
+    text = models.TextField(_('Текст стихотворения'))
+
+    def __str__(self):
+        return f'{self.author} "{self.header}"'
+
+    class Meta:
+        verbose_name = 'Стих'
+        verbose_name_plural = 'Стихи'
+        ordering = ['author', 'header']
+
+
+class Favourite(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users')
+    poem = models.ForeignKey(Poem, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.user} - {self.poem}'
+
+
+class Location(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -107,7 +136,7 @@ class Location(models.Model):
         save_data_from_arcgis.delay(latitude=self.latitude, longitude=self.longitude, location_id=self.pk)
 
 
-class Arcgis(models.Model):
+class Arcgis(BaseModel):
     location = models.OneToOneField(Location, on_delete=models.CASCADE, primary_key=True)
 
     match_addr = models.CharField(max_length=200)
@@ -196,7 +225,7 @@ class Arcgis(models.Model):
         return r.json()
 
 
-class UserActionLog(models.Model):
+class UserActionLog(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     action = models.CharField(max_length=128)
     text = models.TextField(blank=True, null=True)

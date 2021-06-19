@@ -12,6 +12,7 @@ from tgbot.handlers import manage_data as md
 from tgbot.handlers import keyboard_utils as kb
 from tgbot.handlers.utils import handler_logging
 from tgbot.models import User
+from tgbot.poetry import Poetry
 from tgbot.tasks import broadcast_message
 from tgbot.utils import convert_2_user_time, extract_user_data_from_update, get_chat_id
 
@@ -19,14 +20,60 @@ logger = logging.getLogger('default')
 
 
 @handler_logging()
-def btn1_hnd(update, context):
+def send_more(update, context):
     user_id = extract_user_data_from_update(update)['user_id']
+    user = User.get_user(update, context)
 
-    markup = kb.make_btn_keyboard()
-    msg = f'{st.pressed}1'
+    poetry = Poetry(user)
+    poem_text, poem_id = poetry.load_poem()
+
+    context.bot.edit_message_text(
+        text=poem_text,
+        chat_id=user_id,
+        message_id=update.callback_query.message.message_id,
+        reply_markup=kb.make_keyboard_for_start_command(poem_id),
+        parse_mode=telegram.ParseMode.MARKDOWN,
+    )
+
+
+@handler_logging()
+def add_to_fav(update, context):
+    logger.info('Начинаем процесс добавления в избранное')
+    user_id = extract_user_data_from_update(update)['user_id']
+    user = User.get_user(update, context)
+
+    # Извлекаем ID стиха из колбека
+    query = update.callback_query
+    query.answer()
+    query_data = query.data.split('#')
+    poem_id = query_data[1]
+    logger.info(f'Добавляем в избранное стих #{poem_id}')
+
+    poetry = Poetry(user)
+    poetry.add_to_fav(poem_id)
+    msg = st.add_to_fav_success
 
     context.bot.edit_message_text(
         text=msg,
+        chat_id=user_id,
+        message_id=update.callback_query.message.message_id,
+        reply_markup=kb.make_keyboard_for_start_command(poem_id),
+        parse_mode=telegram.ParseMode.MARKDOWN,
+    )
+
+
+@handler_logging()
+def view_fav(update, context):
+    user_id = extract_user_data_from_update(update)['user_id']
+    user = User.get_user(update, context)
+
+    poetry = Poetry(user)
+    authors_first_chars = poetry.get_authors(only_first_chars=True)
+
+    markup = kb.make_alphabetical_keyboard(authors_first_chars)
+
+    context.bot.edit_message_text(
+        text=st.choose_author,
         chat_id=user_id,
         message_id=update.callback_query.message.message_id,
         reply_markup=markup,
@@ -35,33 +82,68 @@ def btn1_hnd(update, context):
 
 
 @handler_logging()
-def btn2_hnd(update, context):
+def show_authors(update, context):
     user_id = extract_user_data_from_update(update)['user_id']
+    user = User.get_user(update, context)
 
-    markup = kb.make_btn_keyboard()
-    msg = f'{st.pressed}2'
+    query = update.callback_query
+    query.answer()
+    query_data = query.data.split('#')
+    selected_char = query_data[1]
+
+    poetry = Poetry(user)
+    authors = poetry.get_authors(only_first_chars=False, last_name_first_char=selected_char)
 
     context.bot.edit_message_text(
-        text=msg,
+        text=st.choose_author_full,
         chat_id=user_id,
         message_id=update.callback_query.message.message_id,
-        reply_markup=markup,
+        reply_markup=kb.make_authors_keyboard(authors),
         parse_mode=telegram.ParseMode.MARKDOWN,
     )
 
 
 @handler_logging()
-def btn3_hnd(update, context):
+def show_author_poems(update, context):
     user_id = extract_user_data_from_update(update)['user_id']
+    user = User.get_user(update, context)
 
-    markup = kb.make_btn_keyboard()
-    msg = f'{st.pressed}3'
+    query = update.callback_query
+    query.answer()
+    query_data = query.data.split('#')
+    author = query_data[1]
+
+    poetry = Poetry(user)
+    poems = poetry.get_poems(author)
+    logger.info(poems)
 
     context.bot.edit_message_text(
-        text=msg,
+        text=st.choose_poem,
         chat_id=user_id,
         message_id=update.callback_query.message.message_id,
-        reply_markup=markup,
+        reply_markup=kb.make_poems_keyboard(poems),
+        parse_mode=telegram.ParseMode.MARKDOWN,
+    )
+
+
+@handler_logging()
+def show_poem_by_id(update, context):
+    user_id = extract_user_data_from_update(update)['user_id']
+    user = User.get_user(update, context)
+
+    query = update.callback_query
+    query.answer()
+    query_data = query.data.split('#')
+    poem_id = query_data[1]
+
+    poetry = Poetry(user)
+    poem = poetry.get_poem_by_id(poem_id)
+
+    context.bot.edit_message_text(
+        text=poetry.format_poem(poem),
+        chat_id=user_id,
+        message_id=update.callback_query.message.message_id,
+        reply_markup=kb.make_btn_keyboard(),
         parse_mode=telegram.ParseMode.MARKDOWN,
     )
 

@@ -1,7 +1,5 @@
 # Info
-Django Telegram Bot Skeleton.
 
-Based on: https://github.com/ohld/django-telegram-bot/
 
 # Установка
 Проект настроен для деплоя через Dokku. Берем VPS, ставим dokku, создаем приложение там, postgres, redis, git.

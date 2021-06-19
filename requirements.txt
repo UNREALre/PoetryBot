@@ -1,7 +1,6 @@
 pytz
-requests
 python-dotenv
-click==7.1.2
+click==8.0.1
 
 # Django
 django
@@ -32,3 +31,8 @@ python-telegram-bot-pagination==0.0.2
 
 # monitoring
 # sentry-sdk
+
+# parsing
+lxml==4.6.3
+requests==2.25.1
+beautifulsoup4==4.9.3

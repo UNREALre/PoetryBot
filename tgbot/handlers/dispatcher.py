@@ -38,9 +38,12 @@ def setup_dispatcher(dp):
     ))
 
     # base buttons
-    dp.add_handler(CallbackQueryHandler(hnd.btn1_hnd, pattern=f'^{md.BTN_1}'))
-    dp.add_handler(CallbackQueryHandler(hnd.btn2_hnd, pattern=f'^{md.BTN_2}'))
-    dp.add_handler(CallbackQueryHandler(hnd.btn3_hnd, pattern=f'^{md.BTN_3}'))
+    dp.add_handler(CallbackQueryHandler(hnd.send_more, pattern=f'^{md.SEND_MORE}'))
+    dp.add_handler(CallbackQueryHandler(hnd.add_to_fav, pattern=f'^{md.ADD_TO_FAV}'))
+    dp.add_handler(CallbackQueryHandler(hnd.view_fav, pattern=f'^{md.VIEW_FAV}'))
+    dp.add_handler(CallbackQueryHandler(hnd.show_authors, pattern=f'^{md.AUTHOR_BTN}'))
+    dp.add_handler(CallbackQueryHandler(hnd.show_author_poems, pattern=f'^{md.POEMS_BY_AUTHOR}'))
+    dp.add_handler(CallbackQueryHandler(hnd.show_poem_by_id, pattern=f'^{md.POEM_BY_NAME}'))
 
     dp.add_handler(CallbackQueryHandler(hnd.back_to_main_menu_handler, pattern=f'^{md.BUTTON_BACK_IN_PLACE}'))
 

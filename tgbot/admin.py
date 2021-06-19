@@ -9,6 +9,8 @@ from dtb.settings import DEBUG
 from tgbot.models import Location, Arcgis
 from tgbot.models import (
     Config,
+    Favourite,
+    Poem,
     User,
     UserActionLog,
 )
@@ -73,4 +75,14 @@ class UserActionLogAdmin(admin.ModelAdmin):
 
 @admin.register(Config)
 class ConfigAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Poem)
+class PoemAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Favourite)
+class FavouriteAdmin(admin.ModelAdmin):
     pass
