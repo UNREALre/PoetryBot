@@ -34,6 +34,7 @@ class Poetry:
         try:
             if id:
                 poem = Poem.objects.get(pk=id)
+                result = self.format_poem(poem)
                 poem_id = id
             else:
                 # 1. Находим максимальную страничку со стихами
